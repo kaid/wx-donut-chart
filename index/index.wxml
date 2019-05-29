@@ -1,2 +1,2 @@
-<view class="intro">欢迎使用代码片段，可在控制台查看代码片段的说明和文档</view>
-<canvas canvas-id="canvas" style="height:500rpx;width:500rpx;"></canvas>
+<view class="intro">DonutChart Demo</view>
+<donut-chart chart-id="donut-chart" />

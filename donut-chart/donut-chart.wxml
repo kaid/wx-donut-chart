@@ -1,0 +1,5 @@
+<canvas
+  canvas-id="{{chartId}}"
+  bindtouchstart="onTouchStart"
+  style="height:{{chartHeight}};width:{{chartWidth}};"
+/>
