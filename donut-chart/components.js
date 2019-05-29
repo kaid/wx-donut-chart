@@ -1,3 +1,7 @@
+const pointInSeries = ({ point, radius, innerRadius, startRadian, radian }) => {
+  return false;
+};
+
 class ArcRenderer {
   constructor({ context, color, radian, startRadian, radius, width, origin }) {
     this.color = color;
@@ -110,8 +114,11 @@ class LabelRenderer {
 // 坐标轴计算是x加，y减
 
 export class DonutChartRender {
-  constructor({ chartId, drawInContext }) {
-    this.context = wx.createCanvasContext(chartId, drawInContext);
+  constructor({ context, data, origin }) {
+    const LabelShowThreshold = 4;
+
+    this.data = data;
+    this.context = context;
   }
 
   draw() {

@@ -5,26 +5,32 @@ const sysInfo = wx.getSystemInfoSync();
 Component({
   properties: {
     chartId: String,
+    data: {
+      type: Array,
+      value: [],
+    },
     chartWidth: {
-      type: String,
-      value: '100%',
+      type: Number,
+      value: sysInfo.screenWidth,
     },
     chartHeight: {
-      type: String,
-      value: `${sysInfo.screenWidth}px`,
+      type: Number,
+      value: sysInfo.screenWidth,
     },
   },
 
   lifetimes: {
     ready() {
-      const { chartId } = this.data;
+      const { chartId, data, chartWidth, chartHeight } = this.data;
+      this.canvasContext = wx.createCanvasContext(chartId, this);
 
-      this.chartRender = new DonutChartRender({
-        chartId,
-        drawInContext: this,
+      console.log(this.canvasContext);
+      const chartRender = new DonutChartRender({
+        data,
+        context: this.canvasContext,
       });
 
-      this.chartRender.draw();
+      chartRender.draw();
     },
   },
 
