@@ -1,3 +1,4 @@
+import each from 'lodash.foreach';
 import reduce from 'lodash.reduce';
 
 const stringToColor = str => {
@@ -173,11 +174,11 @@ class Series {
 
     this.label = new Label({
       ...commonProps,
-      length: 8,
+      length: 10,
       text: label,
       startRadian,
       radius: Radius2,
-      color: color(0.8),
+      color: color(1),
     });
   }
 
@@ -200,10 +201,7 @@ export class DonutChart {
     this.data = data;
     this.origin = origin;
     this.context = context;
-  }
 
-  draw() {
-    const { context, origin, data } = this;
     const sum = reduce(data, (result, { value = 0 }) => result + value, 0);
 
     const { seriesList } = reduce(
@@ -223,7 +221,7 @@ export class DonutChart {
         return {
           seriesList: [
             ...sList,
-            series.draw(),
+            series,
           ],
           startRadian: startRadian - radian,
         };
@@ -232,8 +230,13 @@ export class DonutChart {
     );
 
     this.seriesList = seriesList;
+  }
 
-    console.log(this);
+  draw() {
+    const { context, seriesList = [] } = this;
+
+    each(seriesList, series => series.draw());
+
     context.draw();
 
     return this;
