@@ -9,12 +9,14 @@
 		"postcss": true,
 		"minified": true,
 		"newFeature": true,
-		"autoAudits": false
+		"autoAudits": false,
+		"checkInvalidKey": true,
+		"nodeModules": true
 	},
 	"compileType": "miniprogram",
-	"libVersion": "2.5.1",
-	"appid": "touristappid",
-	"projectname": "canvas-pie-chart",
+	"libVersion": "2.7.0",
+	"appid": "wxdbb5624345765e0d",
+	"projectname": "wx-donut-chart",
 	"debugOptions": {
 		"hidedInDevtools": []
 	},
