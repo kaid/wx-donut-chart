@@ -1,2 +1,2 @@
 <view class="intro">DonutChart Demo</view>
-<donut-chart chart-id="donut-chart" />
+<donut-chart chart-id="donut-chart" data="{{chartData}}" />

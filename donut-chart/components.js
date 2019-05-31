@@ -47,7 +47,7 @@ const pointRadianValues = absPointRadian => quadrant => ({
   4: () => - absPointRadian,
 })[quadrant]();
 
-export const pointInSeries = ({ point, outerRadius, innerRadius, startRadian, endRadian }) => {
+const pointInSeries = ({ point, outerRadius, innerRadius, startRadian, endRadian }) => {
   const { x, y } = point;
 
   const pointRadius = Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
