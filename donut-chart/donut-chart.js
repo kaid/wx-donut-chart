@@ -25,13 +25,11 @@ Component({
 
       this.canvasContext = wx.createCanvasContext(chartId, this);
 
-      const chartRender = new DonutChart({
+      new DonutChart({
         data,
         origin: this.getOrigin(),
         context: this.canvasContext,
-      });
-
-      chartRender.draw();
+      }).draw();
     },
   },
 

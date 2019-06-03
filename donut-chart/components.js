@@ -97,18 +97,19 @@ class Arc {
 class Label {
   constructor({
     color,
+    extra,
     origin,
     radius,
     length,
     context,
     text = '',
     labelRadian,
-    fontSize = 12,
+    fontSize = 10,
   }) {
-    const textPadding = 2;
-
     this.text = text;
+    this.extra = extra;
     this.color = color;
+    this.origin = origin;
     this.context = context;
     this.fontSize = fontSize;
     this.labelRadian = labelRadian; // 坐标系里角度
@@ -136,47 +137,67 @@ class Label {
       x: middleX + (middleX > originX ? length : -length),
       y: middleY,
     };
-
-    const { x: endX, y: endY } = this.endPoint;
-
-    context.setFontSize(fontSize);
-    const textContentWidth = context.measureText(text).width + textPadding;
-
-    this.textStartPoint = {
-      x: endX < originX ? endX - textContentWidth : endX + textPadding,
-      y: endY - textPadding,
-    };
   }
 
   draw() {
     const {
       text,
+      extra,
       color,
+      origin,
       context,
       endPoint,
+      fontSize,
       startPoint,
       middlePoint,
-      textStartPoint,
     } = this;
 
-    context.beginPath()
+    const textPadding = 2;
+
+    context.beginPath();
+    context.setFontSize(fontSize);
+
+    const { x: originX } = origin;
+    const { x: endX, y: endY } = endPoint;
+    const textContentWidth = context.measureText(text).width + textPadding;
+
+    const textStartPoint = {
+      x: endX < originX ? endX - textContentWidth : endX + textPadding,
+      y: endY - textPadding,
+    };
+
+    context.setLineCap('round');
+    context.setLineJoin('round');
     context.setStrokeStyle(color);
+
     context.moveTo(startPoint.x, startPoint.y);
     context.lineTo(middlePoint.x, middlePoint.y);
     context.lineTo(endPoint.x, endPoint.y);
     context.fillText(text, textStartPoint.x, textStartPoint.y)
     context.stroke();
 
+    context.setFontSize(8);
+    const extraWidth = context.measureText(extra).width + textPadding;
+
+    context.setFillStyle('#888888');
+    context.fillText(
+      extra,
+      endX < originX ? endX - extraWidth : endX + textPadding,
+      endY + 8 + textPadding,
+    );
+
     return this;
   }
 }
 
 class Series {
-  constructor({ context, origin, startRadian, endRadian, label, selected }) {
+  constructor({ context, ratio, origin, startRadian, endRadian, label, selected }) {
+    this.origin = origin;
+    this.context = context;
+    this.labelText = label;
     this.selected = selected;
-
-    const { r, g, b } = stringToColor(label);
-    const color = opacity => `rgba(${r}, ${g}, ${b}, ${opacity})`;
+    this.ratio = `${((ratio || 0) * 100).toFixed(1)}%`;
+    this.labelExtra = `场次占比${this.ratio}`;
 
     const commonProps = {
       origin,
@@ -191,7 +212,7 @@ class Series {
       startRadian,
       radius: Radius1,
       width: InnerWidth,
-      color: color(1),
+      color: this.color(1),
     });
 
     const Radius2 = Radius1 + OuterWidth;
@@ -201,16 +222,17 @@ class Series {
       endRadian,
       startRadian,
       radius: Radius2,
-      color: color(0.8),
+      color: this.color(0.8),
       width: OuterWidth,
     });
 
     this.label = new Label({
       ...commonProps,
-      length: selected ? 16 : 10,
-      text: label,
       radius: Radius2,
-      color: color(1),
+      text: this.labelText,
+      color: this.color(1),
+      extra: this.labelExtra,
+      length: selected ? 16 : 10,
       labelRadian: (startRadian + endRadian) / 2,
     });
 
@@ -221,10 +243,47 @@ class Series {
       endRadian,
       startRadian,
       radius: Radius3,
-      color: color(0.4),
+      color: this.color(0.4),
       width: SelectedWidth,
     });
   }
+
+  color(opacity) {
+    const { r, g, b } = stringToColor(this.labelText);
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+  }
+
+  drawSelectedText() {
+    const { origin, context, ratio, labelText } = this;
+
+    context.beginPath();
+    context.setFontSize(20);
+
+    const ratioColor = this.color(1);
+    const ratioTextWidth = context.measureText(ratio).width;
+    const { x: originX, y: originY } = origin;
+    const textStartPoint = {
+      x: originX - ratioTextWidth / 2,
+      y: originY - 6,
+    };
+
+    context.setFillStyle(ratioColor)
+    context.setStrokeStyle(ratioColor);
+    context.fillText(ratio, textStartPoint.x, textStartPoint.y);
+    context.strokeText(ratio, textStartPoint.x, textStartPoint.y)
+
+    context.setFontSize(10);
+
+    const labelTextWidth = context.measureText(labelText).width;
+    const labelTextPoint = {
+      x: originX - labelTextWidth / 2,
+      y: originY + 16,
+    };
+
+    context.setFillStyle('#888888');
+    context.fillText(labelText, labelTextPoint.x, labelTextPoint.y);
+  }
+
 
   draw() {
     const { innerArc, outerArc, selectedArc, label, selected } = this;
@@ -235,6 +294,7 @@ class Series {
 
     if (selected) {
       selectedArc.draw();
+      this.drawSelectedText();
     }
 
     return this;
@@ -256,11 +316,13 @@ export class DonutChart {
       data,
       ({ seriesList: sList, startRadian }, datum) => {
         const { value, label } = datum;
-        const radian = (value * 1.0 / sum) * 2 * Math.PI;
+        const ratio = value * 1.0 / sum;
+        const radian = ratio * 2 * Math.PI;
         const endRadian = startRadian - radian;
 
         const series = new Series({
           label,
+          ratio,
           origin,
           context,
           endRadian,
